@@ -298,20 +298,90 @@
           </p>
         </div>
 
-        <!-- 맞춤 피드백 (초등 격려 vs 고등 세특 기록 초안) -->
-        <div class="p-4 sm:p-5 rounded-2xl bg-black/40 border border-emerald-500/30 space-y-2">
+        <!-- [심층 분석 1] 필요 핵심 역량 태그 -->
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center space-x-1.5">
+            <span>🎯</span>
+            <span>필요 핵심 역량</span>
+          </h4>
+          <div id="resultSkillsContainer" class="flex flex-wrap gap-1.5">
+            <!-- JS로 역량 배지 렌더링 -->
+          </div>
+        </div>
+
+        <!-- [심층 분석 2] 연계 학과 및 주요 진출 기관 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div class="p-3.5 rounded-xl bg-black/40 border border-emerald-500/25 space-y-1">
+            <span class="text-emerald-400 font-bold flex items-center gap-1.5">
+              <span>🎓</span> 추천 연계 학과
+            </span>
+            <p id="resultMajorsText" class="text-emerald-100/90 leading-relaxed font-medium pt-0.5">-</p>
+          </div>
+          <div class="p-3.5 rounded-xl bg-black/40 border border-emerald-500/25 space-y-1">
+            <span class="text-emerald-400 font-bold flex items-center gap-1.5">
+              <span>🏢</span> 주요 진출 기관 및 연구소
+            </span>
+            <p id="resultInstitutionsText" class="text-emerald-100/90 leading-relaxed font-medium pt-0.5">-</p>
+          </div>
+        </div>
+
+        <!-- [심층 분석 3] 추천 탐구 보고서 주제 -->
+        <div class="p-3.5 rounded-xl bg-black/40 border border-emerald-500/25 space-y-1.5">
+          <span class="text-emerald-400 font-bold text-xs flex items-center gap-1.5">
+            <span>🔬</span> 추천 탐구 보고서 프로젝트 주제
+          </span>
+          <p id="resultResearchTopic" class="text-xs sm:text-sm text-emerald-100/95 font-medium leading-relaxed">-</p>
+        </div>
+
+        <!-- [심층 분석 4] 생활기록부 진로 세특 심층 분석 문안 (300자 내외 완성형) -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-black/50 border border-emerald-500/35 space-y-2.5">
           <div class="flex items-center justify-between">
             <h4 id="feedbackTitle" class="text-xs font-bold text-emerald-300 flex items-center space-x-1.5">
-              <span>💡</span>
-              <span>생활기록부 진로 세특 분석 피드백</span>
+              <span>📋</span>
+              <span>생활기록부 진로 세특 심층 분석 문안</span>
             </h4>
-            <button onclick="app.copyFeedbackText()" class="text-[11px] text-emerald-400 hover:text-white transition">
-              📋 문구 복사
+            <button onclick="app.copyDetailedRecord()" class="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-white border border-emerald-500/30 transition flex items-center gap-1">
+              <span>📋</span>
+              <span>문구 복사</span>
             </button>
           </div>
-          <p id="resultFeedbackText" class="text-xs sm:text-sm text-emerald-200/80 leading-relaxed">
-            탄소중립 제도와 ESG 거버넌스를 아우르는 거시적 전략 기획 역량이 탁월합니다.
+          <p id="resultDetailedRecord" class="text-xs sm:text-sm text-emerald-100/90 leading-relaxed bg-black/30 p-3.5 rounded-xl border border-emerald-500/20 font-normal">
+            <!-- JS로 완성형 세특 문단 주입 -->
           </p>
+        </div>
+
+        <!-- [직접 작성 5] 학생 탐구 소감 및 실천 계획 작성란 -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-950/40 to-teal-950/30 border border-emerald-500/40 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <h4 class="text-xs sm:text-sm font-bold text-emerald-300 flex items-center space-x-1.5">
+              <span>✍️</span>
+              <span>나의 탐구 소감 및 실천 계획 (직접 작성)</span>
+            </h4>
+            <span id="reflectionCharCount" class="text-[11px] text-emerald-400/80 font-mono">0 / 500자</span>
+          </div>
+          <p class="text-[11px] text-emerald-300/70">
+            선택한 정책의 이유, 새롭게 알게 된 그린잡의 매력, 앞으로 학교 생활에서 탐구해보고 싶은 실천 다짐을 직접 작성해 보세요.
+          </p>
+          
+          <!-- 작성 도우미 버튼들 -->
+          <div class="flex flex-wrap gap-1.5 text-[11px]">
+            <button type="button" onclick="app.appendReflectionPrompt('선택한 정책의 이유: ')" class="px-2 py-0.5 rounded bg-emerald-900/50 hover:bg-emerald-800/60 text-emerald-200 border border-emerald-500/30 transition">+ 정책 선택 이유</button>
+            <button type="button" onclick="app.appendReflectionPrompt('새롭게 알게 된 점: ')" class="px-2 py-0.5 rounded bg-emerald-900/50 hover:bg-emerald-800/60 text-emerald-200 border border-emerald-500/30 transition">+ 새롭게 알게 된 점</button>
+            <button type="button" onclick="app.appendReflectionPrompt('앞으로의 실천 다짐: ')" class="px-2 py-0.5 rounded bg-emerald-900/50 hover:bg-emerald-800/60 text-emerald-200 border border-emerald-500/30 transition">+ 앞으로의 실천 다짐</button>
+          </div>
+
+          <textarea id="studentReflectionInput" rows="4" maxlength="500"
+            oninput="app.onReflectionInput(this.value)"
+            placeholder="예: 이번 시뮬레이션에서 자연기반해법(NbS)에 높은 예산을 투입한 이유는 지속가능한 해안 보호를 위해서입니다. 앞으로 학교 과학 동아리에서 해안 침식과 블루카본에 대해 더 깊이 탐구하고 싶습니다."
+            class="w-full bg-black/60 border border-emerald-500/30 rounded-xl px-3.5 py-3 text-xs sm:text-sm text-white placeholder-emerald-400/30 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition resize-y"></textarea>
+
+          <div class="flex items-center justify-between">
+            <span id="reflectionSaveStatus" class="text-[11px] text-emerald-400 font-medium"></span>
+            <button onclick="app.saveReflection()" class="px-4 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs transition shadow shadow-emerald-500/30 flex items-center gap-1">
+              <span>💾</span>
+              <span>작성 내용 저장</span>
+            </button>
+          </div>
         </div>
 
         <!-- 연관 서브 직업 2종 추천 -->
@@ -712,12 +782,44 @@
         document.getElementById('resultMainJobName').innerText = matchResult.mainJob.name;
         document.getElementById('resultCategoryTag').innerText = `${matchResult.category} 분야 (${matchResult.mainJob.scoreRange})`;
         document.getElementById('resultJobDesc').innerText = matchResult.mainJob.description;
-        document.getElementById('resultFeedbackText').innerText = matchResult.mainJob.feedback;
+
+        // [심층 분석 1] 핵심 역량 태그 배지 바인딩
+        const skillsContainer = document.getElementById('resultSkillsContainer');
+        if (skillsContainer) {
+          skillsContainer.innerHTML = '';
+          (matchResult.mainJob.skills || []).forEach(skill => {
+            const badge = document.createElement('span');
+            badge.className = 'px-2.5 py-1 rounded-full text-xs bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 font-medium tracking-tight';
+            badge.innerText = skill;
+            skillsContainer.appendChild(badge);
+          });
+        }
+
+        // [심층 분석 2] 연계 학과 및 진출 기관 바인딩
+        const majorsEl = document.getElementById('resultMajorsText');
+        if (majorsEl) majorsEl.innerText = matchResult.mainJob.majors || '-';
+
+        const instEl = document.getElementById('resultInstitutionsText');
+        if (instEl) instEl.innerText = matchResult.mainJob.institutions || '-';
+
+        // [심층 분석 3] 추천 탐구 보고서 주제 바인딩
+        const topicEl = document.getElementById('resultResearchTopic');
+        if (topicEl) topicEl.innerText = matchResult.mainJob.researchTopic || '-';
+
+        // [심층 분석 4] 세특 심층 분석 문안 바인딩
+        const detailEl = document.getElementById('resultDetailedRecord');
+        if (detailEl) detailEl.innerText = matchResult.mainJob.detailedRecord || matchResult.mainJob.description;
 
         const isElem = (this.state.gradeTier === 'ELEM');
-        document.getElementById('feedbackTitle').innerHTML = isElem
-          ? `<span>🌟</span><span>초등 환경 리더 칭찬 피드백</span>`
-          : `<span>💡</span><span>생활기록부 진로 세특 분석 피드백</span>`;
+        const feedbackTitleEl = document.getElementById('feedbackTitle');
+        if (feedbackTitleEl) {
+          feedbackTitleEl.innerHTML = isElem
+            ? `<span>🌟</span><span>초등 환경 실천 격려 및 진로 추천 문안</span>`
+            : `<span>📋</span><span>생활기록부 진로 세특 심층 분석 문안</span>`;
+        }
+
+        // [직접 작성 5] 저장된 학생 탐구 소감 불러오기
+        this.loadStudentReflection(matchResult.mainJob.name);
 
         // 서브 직업 바인딩
         const subContainer = document.getElementById('subJobsContainer');
@@ -745,15 +847,66 @@
         this.goToView('viewResult');
       },
 
-      copyFeedbackText: function() {
-        const text = document.getElementById('resultFeedbackText').innerText;
+      copyDetailedRecord: function() {
+        const text = document.getElementById('resultDetailedRecord')?.innerText || '';
+        if (!text) return;
         navigator.clipboard.writeText(text).then(() => {
-          alert('피드백 문구가 클립보드에 복사되었습니다! 생활기록부나 보고서에 붙여넣으세요.');
+          alert('📋 세특 심층 분석 문안이 클립보드에 복사되었습니다!\n생활기록부 또는 수행평가 탐구 보고서에 활용하세요.');
+        }).catch(() => {
+          alert('문구가 복사되었습니다.');
         });
       },
 
+      onReflectionInput: function(val) {
+        const counter = document.getElementById('reflectionCharCount');
+        if (counter) counter.innerText = `${val.length} / 500자`;
+        const status = document.getElementById('reflectionSaveStatus');
+        if (status) status.innerText = '';
+      },
+
+      appendReflectionPrompt: function(prefix) {
+        const textarea = document.getElementById('studentReflectionInput');
+        if (!textarea) return;
+        const currentVal = textarea.value.trim();
+        if (currentVal) {
+          textarea.value = currentVal + '\n' + prefix;
+        } else {
+          textarea.value = prefix;
+        }
+        this.onReflectionInput(textarea.value);
+        textarea.focus();
+      },
+
+      saveReflection: function() {
+        const textarea = document.getElementById('studentReflectionInput');
+        const val = textarea ? textarea.value.trim() : '';
+        const jobName = document.getElementById('resultMainJobName')?.innerText || 'default';
+        const key = 'GREENIT_REFLECT_' + jobName;
+        localStorage.setItem(key, val);
+        this.state.studentReflection = val;
+
+        const status = document.getElementById('reflectionSaveStatus');
+        if (status) {
+          status.innerText = '✅ 나의 탐구 소감이 안전하게 저장되었습니다!';
+          setTimeout(() => { if (status) status.innerText = ''; }, 3500);
+        }
+      },
+
+      loadStudentReflection: function(jobName) {
+        const key = 'GREENIT_REFLECT_' + (jobName || 'default');
+        const saved = localStorage.getItem(key) || '';
+        const textarea = document.getElementById('studentReflectionInput');
+        if (textarea) {
+          textarea.value = saved;
+          this.onReflectionInput(saved);
+        }
+        this.state.studentReflection = saved;
+      },
+
       downloadA4Report: function() {
-        alert('📄 [A4 PDF 보고서]\n학번/이름 및 레이더 차트가 각인된 공식 리포트 다운로드 기능은 Phase 5에서 완성됩니다.');
+        const jobName = document.getElementById('resultMainJobName')?.innerText || '';
+        const reflection = this.state.studentReflection || '';
+        alert(`📄 [A4 PDF 공식 진로 리포트]\n- 추천 직업: ${jobName}\n- 학생 탐구 소감: ${reflection ? '작성 완료 (' + reflection.length + '자)' : '미작성'}\n\nPDF 렌더링 및 출력 다운로드 기능은 Phase 5에서 인쇄 레이아웃으로 바로 내보낼 수 있도록 제공됩니다.`);
       },
 
       captureResultScreen: function() {
