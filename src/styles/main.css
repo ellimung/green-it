@@ -1,0 +1,105 @@
+/**
+ * main.css - 그린잇! (Green-it!) 디자인 시스템 및 테마 스타일시트
+ */
+
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+:root {
+  --primary-emerald: #10B981;
+  --primary-dark: #064E3B;
+  --accent-teal: #14B8A6;
+  --accent-sky: #0EA5E9;
+  --accent-amber: #F59E0B;
+  --bg-deep: #06110D;
+  --surface-card: rgba(13, 30, 24, 0.75);
+  --surface-border: rgba(52, 211, 153, 0.2);
+  --text-main: #ECFDF5;
+  --text-muted: #9CA3AF;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+}
+
+body {
+  background: radial-gradient(circle at 50% 0%, #064e3b 0%, #06110d 60%, #030806 100%);
+  color: var(--text-main);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* 글래스모피즘 컨테이너 */
+.glass-panel {
+  background: var(--surface-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-card {
+  background: rgba(16, 44, 34, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(52, 211, 153, 0.5);
+  box-shadow: 0 12px 28px -4px rgba(16, 185, 129, 0.25);
+}
+
+/* 커스텀 슬라이더 스타일 */
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  height: 8px;
+  border-radius: 6px;
+  outline: none;
+  transition: background 0.2s;
+}
+
+input[type=range]:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #10B981;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.8);
+  border: 2px solid #ECFDF5;
+  transition: transform 0.15s ease-in-out;
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* 펄스 글로우 애니메이션 */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.8);
+  }
+}
+
+.glow-btn {
+  animation: glow-pulse 3s infinite;
+}
+
+/* 부드러운 스크롤 */
+html {
+  scroll-behavior: smooth;
+}

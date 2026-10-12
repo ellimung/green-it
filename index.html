@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>그린잇! (Green-it!) - 미래 환경 진로 체험 플랫폼</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Google Font: Pretendard -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+
+  <!-- Domain Modules Embedded for Seamless Single-File Execution -->
+  <script src="src/domains/simulation/topics.data.js"></script>
+  <script src="src/domains/simulation/simulation.engine.js"></script>
+  <script src="src/domains/greenjob/greenjob.cache.js"></script>
+  <script src="src/domains/greenjob/greenjob.matcher.js"></script>
+  <script src="src/shared/api/gas.client.js"></script>
+  <link rel="stylesheet" href="src/styles/main.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            emerald: {
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              950: '#022c22'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#040d0a] text-emerald-50 min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
+
+  <!-- ======================================================== -->
+  <!-- 1. GLOBAL NAVIGATION BAR -->
+  <!-- ======================================================== -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-emerald-500/20 px-4 lg:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="app.resetHome()">
+        <span class="text-3xl">🌱</span>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-200 bg-clip-text text-transparent">
+            그린잇! (Green-it!)
+          </h1>
+          <p class="text-xs text-emerald-400/70 hidden sm:block">미래 환경 진로 체험 & AI 맞춤 그린잡 리포트</p>
+        </div>
+      </div>
+
+      <!-- 학생 화면: 순수 안내 배지 (전환 버튼 없음) -->
+      <div id="studentHeaderBadge" class="flex items-center">
+        <span class="px-3 py-1 text-xs rounded-full font-medium border bg-emerald-500/10 text-emerald-300 border-emerald-500/30">
+          🌿 학생 체험 모드
+        </span>
+      </div>
+
+      <!-- 교사 전용 컨트롤 (교사용 접속 시에만 노출) -->
+      <div id="teacherHeaderControls" class="hidden flex items-center space-x-2 sm:space-x-3">
+        <span class="px-2.5 py-1 text-xs rounded-full font-semibold border bg-amber-500/10 text-amber-300 border-amber-500/30">
+          👨‍🏫 교사용 통제실
+        </span>
+
+        <button onclick="app.exitTeacherMode()" class="px-3 py-1.5 text-xs rounded-lg glass-card text-emerald-200 hover:text-white border-emerald-500/30 hover:border-emerald-400 transition flex items-center space-x-1">
+          <span>🎒</span>
+          <span>학생 모드로 나가기</span>
+        </button>
+
+        <button onclick="app.showSettingsModal()" class="p-1.5 text-xs rounded-lg glass-card text-emerald-300 hover:text-white transition" title="구글 시트 연동 설정">
+          ⚙️
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- 2. MAIN APP CONTENT CONTAINER -->
+  <!-- ======================================================== -->
+  <main class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col justify-center">
+
+    <!-- -------------------------------------------------------- -->
+    <!-- [화면 1] 학교급 선택 (Grade Selector) -->
+    <!-- -------------------------------------------------------- -->
+    <section id="viewGradeSelect" class="space-y-8 animate-fade-in py-6">
+      <div class="text-center space-y-3">
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+          STEP 1. 학교급 맞춤 설정
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white">
+          어느 학교에 다니고 있나요?
+        </h2>
+        <p class="text-emerald-300/80 text-sm sm:text-base max-w-lg mx-auto">
+          학교급에 맞춰 눈높이에 쏙 들어오는 직무 설명과 맞춤형 진로 피드백이 제공됩니다.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto pt-4">
+        <!-- 초등학교 카드 -->
+        <div onclick="app.selectGradeTier('ELEM')" class="glass-card rounded-2xl p-6 sm:p-8 cursor-pointer hover:border-emerald-400 text-left relative overflow-hidden group">
+          <div class="absolute -right-6 -bottom-6 text-7xl opacity-10 group-hover:scale-110 transition duration-300">🐣</div>
+          <div class="text-4xl mb-4">🐣</div>
+          <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-emerald-300 transition">초등학생 (3~6학년)</h3>
+          <p class="text-sm text-emerald-200/70 mb-6 leading-relaxed">
+            재미있는 닉네임으로 참여해요!<br>
+            쉬운 이야기와 귀여운 캐릭터로 <strong>'지구 지킴이 그린잡'</strong>을 만나요.
+          </p>
+          <span class="inline-flex items-center text-xs font-semibold text-emerald-400 group-hover:translate-x-1 transition">
+            초등 모드로 시작하기 &rarr;
+          </span>
+        </div>
+
+        <!-- 중고등학교 카드 -->
+        <div onclick="app.selectGradeTier('SEC')" class="glass-card rounded-2xl p-6 sm:p-8 cursor-pointer hover:border-teal-400 text-left relative overflow-hidden group">
+          <div class="absolute -right-6 -bottom-6 text-7xl opacity-10 group-hover:scale-110 transition duration-300">🎓</div>
+          <div class="text-4xl mb-4">🎓</div>
+          <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-teal-300 transition">중·고등학생</h3>
+          <p class="text-sm text-teal-200/70 mb-6 leading-relaxed">
+            학번과 실명으로 공식 보고서를 만들어요!<br>
+            ESG 규제 분석과 <strong>'생기부 세특 맞춤형 피드백'</strong>을 지원해요.
+          </p>
+          <span class="inline-flex items-center text-xs font-semibold text-teal-400 group-hover:translate-x-1 transition">
+            중·고등 모드로 시작하기 &rarr;
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------- -->
+    <!-- [화면 2] 학생 프로필 입력 (Login Form) -->
+    <!-- -------------------------------------------------------- -->
+    <section id="viewStudentLogin" class="hidden space-y-6 max-w-md mx-auto w-full py-6">
+      <div class="text-center space-y-2">
+        <button onclick="app.goToView('viewGradeSelect')" class="text-xs text-emerald-400 hover:underline mb-2 inline-block">
+          &larr; 학교급 다시 선택
+        </button>
+        <h2 class="text-2xl sm:text-3xl font-bold text-white">참가자 정보 입력</h2>
+        <p id="loginSubtitle" class="text-xs sm:text-sm text-emerald-300/80">닉네임을 입력해 주세요.</p>
+      </div>
+
+      <div class="glass-panel rounded-2xl p-6 sm:p-8 space-y-5">
+        <div>
+          <label class="block text-xs font-medium text-emerald-300 mb-1.5">학교명</label>
+          <input type="text" id="inputSchoolName" value="한국초등학교" class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-emerald-500/30 text-white text-sm focus:outline-none focus:border-emerald-400 transition" placeholder="예: 한국고등학교">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-emerald-300 mb-1.5">학년</label>
+            <input type="number" id="inputGrade" value="6" min="1" max="6" class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-emerald-500/30 text-white text-sm focus:outline-none focus:border-emerald-400 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-emerald-300 mb-1.5">반</label>
+            <input type="number" id="inputClassNum" value="2" min="1" max="20" class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-emerald-500/30 text-white text-sm focus:outline-none focus:border-emerald-400 transition">
+          </div>
+        </div>
+
+        <!-- 초등용 입력 필드 -->
+        <div id="elemInputGroup">
+          <label class="block text-xs font-medium text-emerald-300 mb-1.5">활동 닉네임 (또는 번호)</label>
+          <input type="text" id="inputNickname" value="초록별" class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-emerald-500/30 text-white text-sm focus:outline-none focus:border-emerald-400 transition" placeholder="예: 숲속다람쥐, 7번">
+        </div>
+
+        <!-- 중고등용 입력 필드 -->
+        <div id="secInputGroup" class="hidden space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-emerald-300 mb-1.5">출석 번호 / 학번</label>
+            <input type="text" id="inputStudentNo" value="20315" class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-emerald-500/30 text-white text-sm focus:outline-none focus:border-emerald-400 transition" placeholder="예: 20315">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-emerald-300 mb-1.5">이름 (공식 리포트 실명)</label>
+            <input type="text" id="inputStudentName" value="홍길동" class="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-emerald-500/30 text-white text-sm focus:outline-none focus:border-emerald-400 transition" placeholder="예: 홍길동">
+          </div>
+        </div>
+
+        <button onclick="app.submitStudentLogin()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 hover:from-emerald-400 hover:to-teal-400 transition glow-btn">
+          환경 주제 선택하러 가기 🚀
+        </button>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------- -->
+    <!-- [화면 3] 4대 환경 주제 선택 (Topic Card Picker) -->
+    <!-- -------------------------------------------------------- -->
+    <section id="viewTopicSelect" class="hidden space-y-8 py-6">
+      <div class="text-center space-y-2">
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+          STEP 2. 환경 위기 과제 선택
+        </span>
+        <h2 class="text-3xl font-extrabold text-white">어떤 환경 문제를 해결하고 싶나요?</h2>
+        <p class="text-emerald-300/80 text-sm">
+          당신이 미래 장관 또는 환경 리더가 되어 해결할 핵심 분야를 골라주세요.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="topicCardsContainer">
+        <!-- JS로 4대 카드 동적 렌더링 -->
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------- -->
+    <!-- [화면 4] 3단계 정책 시뮬레이터 (Sliders & Live Chart) -->
+    <!-- -------------------------------------------------------- -->
+    <section id="viewSimulator" class="hidden space-y-8 py-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-emerald-500/20 pb-4">
+        <div>
+          <button onclick="app.goToView('viewTopicSelect')" class="text-xs text-emerald-400 hover:underline mb-1 inline-block">
+            &larr; 다른 주제 변경하기
+          </button>
+          <div class="flex items-center space-x-2">
+            <span id="simTopicIcon" class="text-2xl">🌲</span>
+            <h2 id="simTopicTitle" class="text-2xl font-bold text-white">산림생태 정책 시뮬레이터</h2>
+          </div>
+        </div>
+        <div class="text-right flex items-center space-x-3">
+          <div class="text-xs text-emerald-300/70">실시간 종합 점수</div>
+          <div id="liveTotalScore" class="text-3xl font-black text-emerald-400 font-mono">68점</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- 좌측: 3개 정책 슬라이더 -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="glass-panel rounded-2xl p-6 space-y-6" id="slidersContainer">
+            <!-- JS로 슬라이더 3개 주입 -->
+          </div>
+
+          <button onclick="app.submitPolicySimulation()" class="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-extrabold text-base shadow-xl shadow-emerald-500/30 hover:scale-[1.01] transition glow-btn">
+            정책 제출하고 그린잡 매칭받기 🎯
+          </button>
+        </div>
+
+        <!-- 우측: 실시간 환경 지표 레이더 차트 -->
+        <div class="lg:col-span-5 glass-panel rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-emerald-300">정책 기대효과 지표 (실시간)</h3>
+            <span class="text-xs text-emerald-400/80 font-mono">Chart.js Live</span>
+          </div>
+
+          <div class="relative h-64 w-full flex items-center justify-center">
+            <canvas id="indicatorRadarChart"></canvas>
+          </div>
+
+          <div id="balanceAlertBox" class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 leading-relaxed">
+            예산·규제·기술이 조화를 이룬 균형 잡힌 정책입니다.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------- -->
+    <!-- [화면 5] 결과 매칭 카드 & 피드백 (Job Result Card) -->
+    <!-- -------------------------------------------------------- -->
+    <section id="viewResult" class="hidden space-y-8 py-6">
+      <!-- 상단 점수 배너 -->
+      <div class="text-center space-y-3">
+        <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+          <span>✨</span>
+          <span id="resultTierBadge">미래 전략가 및 시스템 설계자</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white">
+          당신에게 딱 맞는 미래 그린잡은?
+        </h2>
+        <p class="text-emerald-300/80 text-sm">
+          당신의 정책적 결단(점수: <span id="resultScoreSpan" class="font-bold text-white">88</span>점)을 바탕으로 매칭된 진로 프로필입니다.
+        </p>
+      </div>
+
+      <!-- 메인 직업 하이라이트 카드 -->
+      <div class="glass-panel rounded-3xl p-6 sm:p-8 border-2 border-emerald-400/40 shadow-2xl space-y-6 relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-500/20 pb-5">
+          <div class="space-y-1">
+            <span class="text-xs font-semibold px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">대표 메인 그린잡</span>
+            <h3 id="resultMainJobName" class="text-3xl font-black text-white">산림탄소회계사</h3>
+          </div>
+          <div class="text-right">
+            <span id="resultCategoryTag" class="text-xs px-3 py-1 rounded-full bg-emerald-800/40 text-emerald-200 border border-emerald-500/30">
+              산림생태 분야
+            </span>
+          </div>
+        </div>
+
+        <!-- 직무 설명 -->
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400">직무 핵심 역할</h4>
+          <p id="resultJobDesc" class="text-base sm:text-lg text-emerald-100/90 leading-relaxed font-medium">
+            나무와 숲이 빨아들이는 탄소 양을 정확히 세어 지구 온도를 낮추는 숲의 은행원!
+          </p>
+        </div>
+
+        <!-- 맞춤 피드백 (초등 격려 vs 고등 세특 기록 초안) -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-black/40 border border-emerald-500/30 space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 id="feedbackTitle" class="text-xs font-bold text-emerald-300 flex items-center space-x-1.5">
+              <span>💡</span>
+              <span>생활기록부 진로 세특 분석 피드백</span>
+            </h4>
+            <button onclick="app.copyFeedbackText()" class="text-[11px] text-emerald-400 hover:text-white transition">
+              📋 문구 복사
+            </button>
+          </div>
+          <p id="resultFeedbackText" class="text-xs sm:text-sm text-emerald-200/80 leading-relaxed">
+            탄소중립 제도와 ESG 거버넌스를 아우르는 거시적 전략 기획 역량이 탁월합니다.
+          </p>
+        </div>
+
+        <!-- 연관 서브 직업 2종 추천 -->
+        <div class="pt-2">
+          <h4 class="text-xs font-bold text-emerald-400 mb-3">추천 연관 그린잡 (함께 탐색해보세요)</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="subJobsContainer">
+            <!-- JS로 주입 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 리포트 다운로드 및 공유 액션 -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+        <button onclick="app.downloadA4Report()" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 hover:from-emerald-400 hover:to-teal-400 transition flex items-center justify-center space-x-2">
+          <span>📄</span>
+          <span>공식 진로 리포트 (A4 PDF) 저장</span>
+        </button>
+
+        <button onclick="app.captureResultScreen()" class="w-full sm:w-auto px-6 py-3.5 rounded-xl glass-card text-emerald-200 hover:text-white border-emerald-500/30 hover:border-emerald-400 transition text-sm flex items-center justify-center space-x-2">
+          <span>📸</span>
+          <span>화면 이미지 즉시 캡처</span>
+        </button>
+
+        <button onclick="app.goToView('viewTopicSelect')" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-300 text-sm transition">
+          다른 환경 주제 재도전 🔄
+        </button>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------- -->
+    <!-- [화면 6] 교사용 대시보드 미리보기 (?role=teacher) -->
+    <!-- -------------------------------------------------------- -->
+    <section id="viewTeacherDashboard" class="hidden space-y-8 py-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-emerald-500/20 pb-4">
+        <div>
+          <span class="text-xs px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">교사용 수업 통제실</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">학급 통합 관리 대시보드</h2>
+        </div>
+
+        <!-- 핵심: 결과 허용 스위치 -->
+        <div class="flex items-center space-x-3 glass-card px-4 py-2 rounded-2xl">
+          <span class="text-xs font-semibold text-emerald-200">학생 개별 결과 보기 허용:</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="teacherUnlockToggle" onchange="app.handleToggleLock(this.checked)" class="sr-only peer" checked>
+            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- 상단 요약 통계 4개 카드 -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="glass-card p-4 rounded-xl text-center">
+          <div class="text-xs text-emerald-300/70">참여 학생 수</div>
+          <div id="statTotalStudents" class="text-2xl font-black text-white mt-1">28명</div>
+        </div>
+        <div class="glass-card p-4 rounded-xl text-center">
+          <div class="text-xs text-emerald-300/70">학급 평균 점수</div>
+          <div id="statAvgScore" class="text-2xl font-black text-emerald-400 mt-1">74.2점</div>
+        </div>
+        <div class="glass-card p-4 rounded-xl text-center">
+          <div class="text-xs text-emerald-300/70">최고 인기 주제</div>
+          <div id="statTopTopic" class="text-2xl font-black text-teal-300 mt-1">기후에너지</div>
+        </div>
+        <div class="glass-card p-4 rounded-xl text-center">
+          <div class="text-xs text-emerald-300/70">1위 추천 직업</div>
+          <div id="statTopJob" class="text-2xl font-black text-amber-300 mt-1">신재생연구원</div>
+        </div>
+      </div>
+
+      <!-- 통계 차트 영역 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass-panel p-5 rounded-2xl space-y-3">
+          <h4 class="text-xs font-bold text-emerald-300">우리 반 환경 주제 선호도 분포</h4>
+          <div class="h-56 relative flex items-center justify-center">
+            <canvas id="topicPieChart"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl space-y-3">
+          <h4 class="text-xs font-bold text-emerald-300">점수 구간 티어 분포 (상·중·하)</h4>
+          <div class="h-56 relative flex items-center justify-center">
+            <canvas id="tierBarChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- 3. FOOTER -->
+  <!-- ======================================================== -->
+  <footer class="border-t border-emerald-500/10 py-6 text-center text-xs text-emerald-500/50 flex flex-col items-center justify-center space-y-2">
+    <p>&copy; 2026 그린잇! (Green-it!) 미래 환경 진로 체험 플랫폼 &bull; Google Apps Script & Serverless Driven</p>
+    <div class="text-[11px] text-emerald-500/30 pt-1">
+      <button onclick="app.promptTeacherLogin()" class="hover:text-emerald-400 transition underline underline-offset-2">
+        🔒 교사 관리자 접속 (비밀번호 필요)
+      </button>
+    </div>
+  </footer>
+
+  <!-- ======================================================== -->
+  <!-- 4. FRONTEND APP CONTROLLER JAVASCRIPT -->
+  <!-- ======================================================== -->
+  <script>
+    const app = {
+      state: {
+        role: 'student', // 'student' | 'teacher'
+        gradeTier: 'ELEM', // 'ELEM' | 'SEC'
+        student: {
+          schoolName: '한국초등학교',
+          grade: 6,
+          classNum: 2,
+          nickname: '초록별',
+          studentNo: '20315',
+          name: '홍길동'
+        },
+        selectedTopicId: 'FOREST',
+        policy: {
+          budget: 60,
+          regulation: 50,
+          techRnd: 55
+        },
+        simResult: null,
+        isUnlocked: true
+      },
+
+      charts: {
+        radar: null,
+        pie: null,
+        bar: null
+      },
+
+      init: function() {
+        // URL role 파라미터 감지 (?role=teacher)
+        const params = new URLSearchParams(window.location.search);
+        const role = params.get('role');
+        if (role === 'teacher') {
+          if (!sessionStorage.getItem('TEACHER_AUTH')) {
+            const pin = prompt('교사 관리자 비밀번호(PIN)를 입력해 주세요 (기본: 1234):');
+            if (pin === '1234' || pin === '9999') {
+              sessionStorage.setItem('TEACHER_AUTH', 'true');
+              this.state.role = 'teacher';
+            } else {
+              alert('비밀번호가 일치하지 않습니다. 학생 화면으로 이동합니다.');
+              history.replaceState(null, '', window.location.pathname);
+              this.state.role = 'student';
+            }
+          } else {
+            this.state.role = 'teacher';
+          }
+        }
+
+        this.renderTopicCards();
+        this.updateRoleView();
+      },
+
+      updateRoleView: function() {
+        const isTeacher = (this.state.role === 'teacher');
+        
+        // 상단 헤더: 학생 모드일 때는 교사용 버튼을 완전히 숨김
+        const studentBadge = document.getElementById('studentHeaderBadge');
+        const teacherControls = document.getElementById('teacherHeaderControls');
+        
+        if (studentBadge) studentBadge.classList.toggle('hidden', isTeacher);
+        if (teacherControls) teacherControls.classList.toggle('hidden', !isTeacher);
+
+        if (isTeacher) {
+          this.hideAllViews();
+          document.getElementById('viewTeacherDashboard').classList.remove('hidden');
+          this.renderTeacherStats();
+        } else {
+          this.hideAllViews();
+          document.getElementById('viewGradeSelect').classList.remove('hidden');
+        }
+      },
+
+      promptTeacherLogin: function() {
+        const pin = prompt('교사 관리자 비밀번호(PIN)를 입력해 주세요:');
+        if (pin === '1234' || pin === '9999') {
+          sessionStorage.setItem('TEACHER_AUTH', 'true');
+          this.state.role = 'teacher';
+          history.pushState(null, '', '?role=teacher');
+          this.updateRoleView();
+        } else if (pin !== null) {
+          alert('비밀번호가 일치하지 않습니다.');
+        }
+      },
+
+      exitTeacherMode: function() {
+        this.state.role = 'student';
+        sessionStorage.removeItem('TEACHER_AUTH');
+        history.replaceState(null, '', window.location.pathname);
+        this.updateRoleView();
+      },
+
+      hideAllViews: function() {
+        const views = [
+          'viewGradeSelect', 'viewStudentLogin', 'viewTopicSelect',
+          'viewSimulator', 'viewResult', 'viewTeacherDashboard'
+        ];
+        views.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.add('hidden');
+        });
+      },
+
+      goToView: function(viewId) {
+        this.hideAllViews();
+        document.getElementById(viewId).classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+
+      resetHome: function() {
+        this.state.role = 'student';
+        this.updateRoleView();
+      },
+
+      // --- [STEP 1] 학교급 선택 ---
+      selectGradeTier: function(tier) {
+        this.state.gradeTier = tier;
+        const isElem = (tier === 'ELEM');
+
+        document.getElementById('loginSubtitle').innerText = isElem 
+          ? '재미있는 활동 닉네임을 입력해 주세요.' 
+          : '공식 세특 리포트를 위한 학번과 실명을 입력해 주세요.';
+
+        document.getElementById('elemInputGroup').classList.toggle('hidden', !isElem);
+        document.getElementById('secInputGroup').classList.toggle('hidden', isElem);
+
+        if (!isElem) {
+          document.getElementById('inputSchoolName').value = '한국고등학교';
+          document.getElementById('inputGrade').value = '2';
+          document.getElementById('inputClassNum').value = '3';
+        }
+
+        this.goToView('viewStudentLogin');
+      },
+
+      // --- [STEP 2] 학생 로그인 완료 ---
+      submitStudentLogin: function() {
+        this.state.student.schoolName = document.getElementById('inputSchoolName').value;
+        this.state.student.grade = document.getElementById('inputGrade').value;
+        this.state.student.classNum = document.getElementById('inputClassNum').value;
+
+        if (this.state.gradeTier === 'ELEM') {
+          this.state.student.nickname = document.getElementById('inputNickname').value || '초록지킴이';
+        } else {
+          this.state.student.studentNo = document.getElementById('inputStudentNo').value || '10101';
+          this.state.student.name = document.getElementById('inputStudentName').value || '홍길동';
+        }
+
+        this.goToView('viewTopicSelect');
+      },
+
+      // --- [STEP 3] 4대 환경 주제 렌더링 & 선택 ---
+      renderTopicCards: function() {
+        const container = document.getElementById('topicCardsContainer');
+        if (!container) return;
+        container.innerHTML = '';
+
+        for (const key in TOPICS_DATA) {
+          const t = TOPICS_DATA[key];
+          const card = document.createElement('div');
+          card.className = `glass-card rounded-2xl p-6 cursor-pointer hover:border-emerald-400 text-left transition relative flex flex-col justify-between`;
+          card.onclick = () => app.selectTopic(t.id);
+
+          card.innerHTML = `
+            <div>
+              <div class="text-4xl mb-3">${t.icon}</div>
+              <h3 class="text-xl font-bold text-white mb-1">${t.categoryName}</h3>
+              <p class="text-xs text-emerald-200/70 mb-4 line-clamp-2">${t.tagline}</p>
+              <div class="flex flex-wrap gap-1.5 mb-4">
+                ${t.keywords.map(k => `<span class="px-2 py-0.5 rounded text-[10px] bg-black/40 text-emerald-300 border border-emerald-500/20">${k}</span>`).join('')}
+              </div>
+            </div>
+            <span class="inline-flex items-center text-xs font-semibold text-emerald-400">
+              시뮬레이션 시작 &rarr;
+            </span>
+          `;
+          container.appendChild(card);
+        }
+      },
+
+      selectTopic: function(topicId) {
+        this.state.selectedTopicId = topicId;
+        const topic = TOPICS_DATA[topicId];
+
+        document.getElementById('simTopicIcon').innerText = topic.icon;
+        document.getElementById('simTopicTitle').innerText = `${topic.categoryName} 정책 시뮬레이터`;
+
+        // 슬라이더 기본값 세팅
+        this.state.policy.budget = topic.sliders[0].defaultVal;
+        this.state.policy.regulation = topic.sliders[1].defaultVal;
+        this.state.policy.techRnd = topic.sliders[2].defaultVal;
+
+        this.renderSliders(topic);
+        this.updateSimulationCalculation();
+        this.goToView('viewSimulator');
+      },
+
+      // --- [STEP 4] 정책 슬라이더 렌더링 & 연동 ---
+      renderSliders: function(topic) {
+        const container = document.getElementById('slidersContainer');
+        container.innerHTML = '';
+
+        topic.sliders.forEach(s => {
+          const row = document.createElement('div');
+          row.className = 'space-y-2';
+          row.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-sm font-bold text-white block">${s.label}</label>
+                <p class="text-[11px] text-emerald-300/70">${s.desc}</p>
+              </div>
+              <span id="sliderVal_${s.key}" class="text-lg font-black text-emerald-400 font-mono">${s.defaultVal}%</span>
+            </div>
+            <input type="range" min="0" max="100" value="${s.defaultVal}" id="range_${s.key}" 
+              oninput="app.onSliderChange('${s.key}', this.value)">
+          `;
+          container.appendChild(row);
+        });
+      },
+
+      onSliderChange: function(key, val) {
+        this.state.policy[key] = parseInt(val, 10);
+        document.getElementById(`sliderVal_${key}`).innerText = `${val}%`;
+        this.updateSimulationCalculation();
+      },
+
+      updateSimulationCalculation: function() {
+        const res = SimulationEngine.calculate(this.state.selectedTopicId, this.state.policy);
+        this.state.simResult = res;
+
+        document.getElementById('liveTotalScore').innerText = `${res.totalScore}점`;
+        document.getElementById('balanceAlertBox').innerText = res.balanceMessage;
+
+        this.renderRadarChart(res.indicators);
+      },
+
+      renderRadarChart: function(ind) {
+        const ctx = document.getElementById('indicatorRadarChart').getContext('2d');
+        const data = [
+          ind.carbonReduction,
+          ind.ecologicalHealth,
+          ind.economicSustainability,
+          ind.techInnovation
+        ];
+
+        if (this.charts.radar) {
+          this.charts.radar.data.datasets[0].data = data;
+          this.charts.radar.update();
+          return;
+        }
+
+        this.charts.radar = new Chart(ctx, {
+          type: 'radar',
+          data: {
+            labels: ['탄소 감축', '생태 건강성', '경제 지속성', '기술 혁신도'],
+            datasets: [{
+              label: '환경 지표',
+              data: data,
+              backgroundColor: 'rgba(16, 185, 129, 0.25)',
+              borderColor: '#10b981',
+              pointBackgroundColor: '#34d399',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              r: {
+                min: 0,
+                max: 100,
+                ticks: { display: false },
+                grid: { color: 'rgba(52, 211, 153, 0.15)' },
+                angleLines: { color: 'rgba(52, 211, 153, 0.2)' },
+                pointLabels: {
+                  color: '#a7f3d0',
+                  font: { size: 11, family: 'Pretendard' }
+                }
+              }
+            },
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+      },
+
+      // --- [STEP 5] 정책 제출 & 그린잡 매칭 ---
+      submitPolicySimulation: function() {
+        const topic = TOPICS_DATA[this.state.selectedTopicId];
+        const res = this.state.simResult;
+
+        // 직업 매칭 수행
+        const matchResult = GreenJobMatcher.match(topic.categoryName, res.totalScore, this.state.gradeTier);
+
+        // 결과 화면 데이터 바인딩
+        document.getElementById('resultTierBadge').innerText = matchResult.tierBadge;
+        document.getElementById('resultScoreSpan').innerText = matchResult.totalScore;
+        document.getElementById('resultMainJobName').innerText = matchResult.mainJob.name;
+        document.getElementById('resultCategoryTag').innerText = `${matchResult.category} 분야 (${matchResult.mainJob.scoreRange})`;
+        document.getElementById('resultJobDesc').innerText = matchResult.mainJob.description;
+        document.getElementById('resultFeedbackText').innerText = matchResult.mainJob.feedback;
+
+        const isElem = (this.state.gradeTier === 'ELEM');
+        document.getElementById('feedbackTitle').innerHTML = isElem
+          ? `<span>🌟</span><span>초등 환경 리더 칭찬 피드백</span>`
+          : `<span>💡</span><span>생활기록부 진로 세특 분석 피드백</span>`;
+
+        // 서브 직업 바인딩
+        const subContainer = document.getElementById('subJobsContainer');
+        subContainer.innerHTML = '';
+        matchResult.subJobs.forEach(sub => {
+          const div = document.createElement('div');
+          div.className = 'p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/20 text-xs text-emerald-200 flex items-center justify-between';
+          div.innerHTML = `<span>🔹 <strong>${sub}</strong></span><span class="text-[10px] text-emerald-400">연관 추천</span>`;
+          subContainer.appendChild(div);
+        });
+
+        // 가상 제출 기록 저장 (Mock or GAS)
+        GasClient.request('POST', 'submitSimulation', {
+          classId: 'DEMO_CLASS_6_2',
+          studentKey: `DEMO_${this.state.student.nickname || this.state.student.name}`,
+          studentNo: this.state.student.studentNo || '1',
+          studentName: this.state.student.nickname || this.state.student.name,
+          topic: topic.categoryName,
+          policy: this.state.policy,
+          totalScore: res.totalScore,
+          matchedJob: matchResult.mainJob.name,
+          subJobs: matchResult.subJobs
+        });
+
+        this.goToView('viewResult');
+      },
+
+      copyFeedbackText: function() {
+        const text = document.getElementById('resultFeedbackText').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+          alert('피드백 문구가 클립보드에 복사되었습니다! 생활기록부나 보고서에 붙여넣으세요.');
+        });
+      },
+
+      downloadA4Report: function() {
+        alert('📄 [A4 PDF 보고서]\n학번/이름 및 레이더 차트가 각인된 공식 리포트 다운로드 기능은 Phase 5에서 완성됩니다.');
+      },
+
+      captureResultScreen: function() {
+        alert('📸 [화면 캡처]\n클릭 한 번으로 결과 카드를 PNG 이미지로 저장하는 기능은 Phase 5에서 연결됩니다.');
+      },
+
+      // --- 교사용 통계 차트 렌더링 ---
+      renderTeacherStats: function() {
+        // Pie Chart
+        const pieCtx = document.getElementById('topicPieChart').getContext('2d');
+        if (this.charts.pie) this.charts.pie.destroy();
+        this.charts.pie = new Chart(pieCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['산림생태', '해양생태', '기후에너지', '자원순환'],
+            datasets: [{
+              data: [8, 5, 11, 4],
+              backgroundColor: ['#059669', '#0284c7', '#d97706', '#0d9488']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#a7f3d0', font: { family: 'Pretendard' } } } }
+          }
+        });
+
+        // Bar Chart
+        const barCtx = document.getElementById('tierBarChart').getContext('2d');
+        if (this.charts.bar) this.charts.bar.destroy();
+        this.charts.bar = new Chart(barCtx, {
+          type: 'bar',
+          data: {
+            labels: ['상위 (80~100점)', '중위 (50~79점)', '하위 (0~49점)'],
+            datasets: [{
+              label: '학생 수',
+              data: [9, 14, 5],
+              backgroundColor: ['#10b981', '#38bdf8', '#fb7185']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { ticks: { color: '#a7f3d0' }, grid: { color: 'rgba(52, 211, 153, 0.1)' } },
+              x: { ticks: { color: '#a7f3d0' }, grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      },
+
+      handleToggleLock: function(isChecked) {
+        this.state.isUnlocked = isChecked;
+        GasClient.request('POST', 'toggleResultLock', { classId: 'DEMO_CLASS', unlock: isChecked });
+      },
+
+      showSettingsModal: function() {
+        const currentUrl = GasClient.gasUrl || '';
+        const input = prompt('Google Apps Script 웹 앱 배포 URL을 입력하세요:\n(빈칸으로 두면 오프라인 Mock 모드로 동작합니다)', currentUrl);
+        if (input !== null) {
+          GasClient.init(input);
+          alert(GasClient.isMockMode 
+            ? '로컬 오프라인 Mock 모드로 설정되었습니다.' 
+            : '구글 시트 실서버 모드로 전환되었습니다!');
+        }
+      }
+    };
+
+    // DOM 로드 시 앱 초기화
+    window.addEventListener('DOMContentLoaded', () => {
+      app.init();
+    });
+  </script>
+</body>
+</html>
